@@ -5,3 +5,5 @@ logs/
 target
 start-dev.sh
 test-emai.sh
+
+/.clj-kondo/.cache
