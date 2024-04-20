@@ -1,1 +1,0 @@
-["^ ","~$gen-token-test",["^ ","~:row",9,"~:col",1,"~:fixed-arities",["~#set",[0]],"~:name","^0","~:ns","~$scheduler.logic.tokens-test","~:top-ns","^7"],"~$verify-test",["^ ","^1",21,"^2",1,"^3",["^4",[0]],"^5","^9","^6","^7","^8","^7"],"~:filename","/Users/mateus.carvalho/work/repos/scheduler/test/scheduler/logic/tokens_test.clj"]

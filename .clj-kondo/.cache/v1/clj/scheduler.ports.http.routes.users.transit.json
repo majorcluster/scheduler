@@ -1,1 +1,0 @@
-["^ ","~$signup",["^ ","~:row",8,"~:col",1,"~:fixed-arities",["~#set",[1]],"~:name","^0","~:ns","~$scheduler.ports.http.routes.users","~:top-ns","^7","~:type","~:fn"],"~:filename","/Users/mateus.carvalho/work/repos/scheduler/src/scheduler/ports/http/routes/users.clj"]
