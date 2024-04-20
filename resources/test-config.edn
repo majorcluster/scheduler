@@ -1,0 +1,6 @@
+{
+ scheduler.configs/env                 "test"
+ scheduler.configs/user-passphrase     "dobry den"
+ scheduler.configs/admin-passphrase    "dobrou noc"
+ scheduler.configs/token-secret        "dobre rano"
+ }

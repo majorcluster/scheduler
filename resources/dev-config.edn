@@ -1,0 +1,13 @@
+{
+ scheduler.ports.sql.core/url           "jdbc:postgresql://0.0.0.0:5432/scheduler"
+ scheduler.ports.sql.core/username      "admin"
+ scheduler.ports.sql.core/password      "admin"
+ scheduler.ports.http-out.email/from    #config/env "EMAIL_FROM"
+ scheduler.ports.http-out.email/api-key #config/env "EMAIL_API_KEY"
+ scheduler.ports.http-out.email/company #config/env "EMAIL_COMPANY"
+ scheduler.ports.http-out.email/url     #config/env "EMAIL_URL"
+ scheduler.configs/env                  "dev"
+ scheduler.configs/user-passphrase      "dobry den"
+ scheduler.configs/admin-passphrase     "dobrou noc"
+ scheduler.configs/token-secret         "dobre rano"
+ }

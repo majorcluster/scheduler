@@ -1,0 +1,30 @@
+{:skip-comments true
+ :lint-as       {clojure.test.check.clojure-test/defspec clj-kondo.lint-as/def-catch-all
+                 clojure.test.check.properties/for-all   clojure.core/let
+                 schema.test/deftest                     clojure.test/deftest}
+ :linters       {:deprecated-var {:level :info}
+                 :refer-all {:exclude [matcher-combinators.test
+                                       clojure.test.check.clojure-test
+                                       clojure.test]}
+                 :unresolved-symbol {:exclude [db-host
+                                               db-name
+                                               env
+                                               url
+                                               from
+                                               api-key
+                                               company
+                                               username
+                                               password
+                                               user-passphrase
+                                               admin-passphrase
+                                               token-secret
+                                               public-url
+                                               context
+                                               exception]}
+                 :unresolved-var {:exclude [scheduler.configs]}
+                 :clojure-lsp/unused-public-var {:exclude-regex [".+\\.server/run-dev"
+                                                                 ".+\\.configs/env-test\\?"
+                                                                 ".+\\.configs/cookies"]}}
+ :config-in-ns {user {:linters {:unused-referred-var {:level :off}
+                                :unused-namespace {:level :off}
+                                :refer-all {:level :off}}}}}

@@ -1,0 +1,1 @@
+["^ ","~$json-header",["^ ","~:row",3,"~:col",1,"~:name","^0","~:ns","~$scheduler.ports.http-in.routes.commons","~:top-ns","^5","~:type",["^ ","^7","~:map","~:val",["^ ","Content-Type",["^ ","^1",4,"^2",19,"~:end-row",4,"~:end-col",37,"~:tag","~:string"]]]],"~:filename","/Users/mateus.carvalho/work/repos/scheduler/src/scheduler/ports/http_in/routes/commons.clj"]

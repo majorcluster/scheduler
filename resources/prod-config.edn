@@ -1,0 +1,14 @@
+{
+ scheduler.ports.sql.core/url           #config/env "SQL_URL"
+ scheduler.ports.sql.core/username      #config/env "SQL_USERNAME"
+ scheduler.ports.sql.core/password      #config/env "SQL_PWD"
+ scheduler.ports.http-out.email/from    #config/env "EMAIL_FROM"
+ scheduler.ports.http-out.email/api-key #config/env "EMAIL_API_KEY"
+ scheduler.ports.http-out.email/company #config/env "EMAIL_COMPANY"
+ scheduler.ports.http-out.email/url     #config/env "EMAIL_URL"
+ scheduler.configs/env                  "prod"
+ scheduler.configs/user-passphrase      #config/env "USER_PP"
+ scheduler.configs/admin-passphrase     #config/env "ADMIN_PP"
+ scheduler.configs/token-secret         #config/env "TOKEN_SECRET"
+ scheduler.configs/public-url           #config/env "PUBLIC_URL"
+ }

@@ -1,0 +1,7 @@
+/.idea/
+scheduler.iml
+logs/
+
+target
+start-dev.sh
+test-emai.sh
