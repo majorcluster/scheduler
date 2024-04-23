@@ -11,21 +11,21 @@
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 
 (defn extract-validation-msgs
-    [resp]
-      (-> resp
-          :body
-          (json/read-str :key-fn #(-> % (cstr/replace #"_" "-") keyword))
-          :validation-messages))
+  [resp]
+  (-> resp
+      :body
+      (json/read-str :key-fn #(-> % (cstr/replace #"_" "-") keyword))
+      :validation-messages))
 
 (defn setup
-      []
-      (sql.c/migrate-test))
+  []
+  (sql.c/migrate-test))
 
 (defn teardown
-      []
-      (sql.c/teardown))
+  []
+  (sql.c/teardown))
 
 (defn test-fixture [f]
-      (setup)
-      (f)
-      (teardown))
+  (setup)
+  (f)
+  (teardown))

@@ -92,4 +92,40 @@
                                  :message "Unauthorized"})))))
 
 (defn recover-password
-  [email])
+  [email]
+  (let [user (r.users/find-by-email email)
+        token (when user
+                (l.tokens/gen-token-str
+                 (:user/id user)
+                 (current-date)
+                 "password-recovery"))]
+    (when user
+      (do
+        (r.users/update! (assoc user :user/password-recovering true
+                                :user/email-token token) (:user/id user))
+        (out.email/send-email
+         email
+         (get-in i18n/t [configs/default-lang :recover-password-subject])
+         (get-in i18n/t [configs/default-lang :recover-password-body])
+         {:name (:user/fname user)
+          :link (str configs/public-url "/users/change-password/" token)})))))
+
+(defn change-password
+  [user-id token new-password]
+  (let [user (r.users/find-by-id user-id)
+        matching-token? (and user
+                             (= token (:user/email-token user))
+                             (:user/password-recovering user))
+        expired? (-> token verify-token :valid not)]
+    (cond expired?
+          (throw (ex-info "Unauthorized"
+                          {:type :unauthorized
+                           :message "Unauthorized"}))
+          matching-token?
+          (r.users/update! (assoc user
+                                  :user/password-recovering false
+                                  :user/email-token nil
+                                  :user/password new-password) user-id)
+          :else
+          (throw (ex-info "Token Mismatch" {:type :token-mismatch
+                                            :message "The token does not match the user"})))))

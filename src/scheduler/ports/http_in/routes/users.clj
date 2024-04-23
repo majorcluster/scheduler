@@ -2,7 +2,8 @@
   (:require
    [pedestal-api-helper.params-helper :as ph]
    [scheduler.adapters.users :as a.users]
-   [scheduler.controllers.users :as c.users]))
+   [scheduler.controllers.users :as c.users]
+   [scheduler.ports.http-in.routes.interceptors :as i]))
 
 (defn signup [request]
   (let [token (-> (get request :json-params {})
@@ -53,3 +54,34 @@
                   c.users/login)]
     {:status 200
      :headers {"x-token" token}}))
+
+(defn recover-password [request]
+  (let [_ (-> (get request :json-params {})
+              (ph/validate-and-mop!!
+               {"email"        [{:validate/type :validate/mandatory}
+                                {:validate/type :validate/min, :validate/value 5}
+                                {:validate/type :validate/max, :validate/value 100}]}
+               ["email"])
+              :email
+              c.users/recover-password)]
+    {:status 200 :body {:message "Recovery E-mail has been sent"}}))
+
+(defn change-password [request]
+  (let [token (get-in request [:headers "x-token"] "")
+        user-id (get-in request [:authz-user :user-id])
+        _ (-> (get request :json-params {})
+              (ph/validate-and-mop!!
+               {"new-password"    [{:validate/type :validate/mandatory}
+                                   {:validate/type :validate/min, :validate/value 8}
+                                   {:validate/type :validate/max, :validate/value 100}]}
+               ["new-password"])
+              :new-password
+              (#(c.users/change-password user-id token
+                                         (a.users/change-password->internal %))))]
+    {:status 200 :body {:message "Password changed"}}))
+
+(def specs #{["/users/signup" :post (conj i/json-public-interceptors `signup)]
+             ["/users/verify-email/:token" :get (conj i/json-gateway-interceptors `verify-email)]
+             ["/users/login" :post (conj i/json-public-interceptors `login)]
+             ["/users/recover-password" :post (conj i/json-public-interceptors `recover-password)]
+             ["/users/change-password" :post (conj i/json-gateway-interceptors `change-password)]})

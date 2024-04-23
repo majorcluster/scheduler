@@ -5,8 +5,8 @@
    [clojure.test :refer :all]
    [scheduler.controllers.users :as c.users]
    [scheduler.logic.tokens :as l.tokens]
-   [scheduler.ports.sql.repositories.users :as r.users]
-   [scheduler.ports.http-in.routes.interceptors :as interceptors])
+   [scheduler.ports.http-in.routes.interceptors :as interceptors]
+   [scheduler.ports.sql.repositories.users :as r.users])
   (:import
    [clojure.lang ExceptionInfo]))
 

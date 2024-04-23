@@ -57,3 +57,7 @@
   [wire]
   (-> wire
       (assoc :password (sha256 (:password wire)))))
+
+(defn change-password->internal
+  [password]
+  (sha256 password))

@@ -6,34 +6,34 @@
    (clojure.lang ExceptionInfo)))
 
 (defn- get-exception-data
-       [exception]
+  [exception]
   (or (-> exception
-               ex-data
-               :exception
-               ex-data)
-           (try
-             (-> exception
-                 ex-data
-                 :exception
-                 .getCause
-                 ex-data)
-             (catch Exception _
-               nil))))
+          ex-data
+          :exception
+          ex-data)
+      (try
+        (-> exception
+            ex-data
+            :exception
+            .getCause
+            ex-data)
+        (catch Exception _
+          nil))))
 
 (defn- get-exception-type
-       [exception]
-       (-> exception
-           get-exception-data
-           :type))
+  [exception]
+  (-> exception
+      get-exception-data
+      :type))
 
 (defn- resp-custom-ex
-       [exception status]
+  [exception status]
   (let [body (get-exception-data exception)
-             body (cond (map? body) (cjson/write-str body)
-                        :else body)]
-            {:status status
-             :body body
-             :headers {"Content-Type" "application/json"}}))
+        body (cond (map? body) (cjson/write-str body)
+                   :else body)]
+    {:status status
+     :body body
+     :headers {"Content-Type" "application/json"}}))
 
 (def service-error-handler
   (error-dispatch

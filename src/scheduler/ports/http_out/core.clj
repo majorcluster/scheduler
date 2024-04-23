@@ -1,7 +1,7 @@
 (ns scheduler.ports.http-out.core
   (:require
-   [org.httpkit.sni-client :as sni-client]
-   [org.httpkit.client :as client]))
+   [org.httpkit.client :as client]
+   [org.httpkit.sni-client :as sni-client]))
 
 (defn start
   []

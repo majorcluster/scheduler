@@ -5,13 +5,13 @@
    [scheduler.ports.sql.core :as sql.c]))
 
 (defn start-ports-dev
-      [migrate?]
-      (sql.c/start migrate?)
-      (in.ports/start-dev)
-      (out.ports/start))
+  [migrate?]
+  (sql.c/start migrate?)
+  (in.ports/start-dev)
+  (out.ports/start))
 
 (defn start-ports
-      [migrate?]
-      (sql.c/start migrate?)
-      (in.ports/start)
-      (out.ports/start))
+  [migrate?]
+  (sql.c/start migrate?)
+  (in.ports/start)
+  (out.ports/start))
