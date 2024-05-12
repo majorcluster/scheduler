@@ -7,7 +7,7 @@
    [core-test :refer [extract-validation-msgs service test-fixture]]
    [io.pedestal.test :refer [response-for]]
    [matcher-combinators.test]
-   [scheduler.controllers.users :as c.users]
+   [scheduler.controllers.dates :as c.dates]
    [scheduler.logic.tokens :as l.tokens]
    [scheduler.ports.http-out.email :as out.email]
    [scheduler.ports.sql.repositories.users :as r.users]))
@@ -37,9 +37,9 @@
                (map :field (extract-validation-msgs resp))))))
     (testing "user inserted"
       (let [resp (with-redefs-fn
-                   {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                    #'inst-ms     (fn [_] 1234567890123)
-                    #'c.users/current-date (fn [] 1234567890123)
+                   {#'random-uuid          (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms              (fn [_] 1234567890123)
+                    #'c.dates/current-date (fn [] 1234567890123)
                     #'out.email/send-email (fn [_ _ _ _] nil)}
                    #(response-for service
                                   :post "/users/signup"
@@ -69,7 +69,7 @@
       (let [resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms     (fn [_] 1234567890123)
-                    #'c.users/current-date (fn [] 1234567890123)
+                    #'c.dates/current-date (fn [] 1234567890123)
                     #'out.email/send-email (fn [_ _ _ _] nil)}
                    #(response-for service
                                   :post "/users/signup"
@@ -107,7 +107,7 @@
                          "login")
             resp (with-redefs-fn
                    {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :get (str "/users/verify-email/" email-token)
                                   :headers (assoc json-headers
@@ -124,7 +124,7 @@
                          "login")
             resp (with-redefs-fn
                    {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :get (str "/users/verify-email/" email-token)
                                   :headers (assoc json-headers
@@ -137,7 +137,7 @@
       (let [current-ms (time/date-time 2023 6 6 13 0 0)
             resp (with-redefs-fn
                    {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :get (str "/users/verify-email/" email-token)
                                   :headers json-headers))
@@ -153,7 +153,7 @@
                          "login")
             resp (with-redefs-fn
                    {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :get (str "/users/verify-email/" email-token)
                                   :headers (assoc json-headers
@@ -169,7 +169,7 @@
                          "login")
             resp (with-redefs-fn
                    {#'inst-ms (fn [_] (coerce/to-long issue-date))
-                    #'c.users/current-date (fn [] (coerce/to-long issue-date))}
+                    #'c.dates/current-date (fn [] (coerce/to-long issue-date))}
                    #(response-for service
                                   :get (str "/users/verify-email/" email-token)
                                   :headers (assoc json-headers
@@ -199,7 +199,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/login")
                                   :headers json-headers
@@ -211,7 +211,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/login")
                                   :headers json-headers
@@ -224,7 +224,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/login")
                                   :headers json-headers
@@ -238,7 +238,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/login")
                                   :headers json-headers
@@ -276,7 +276,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/recover-password")
                                   :headers json-headers
@@ -287,7 +287,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))
                     #'out.email/send-email (fn [_ _ _ _] nil)}
                    #(response-for service
                                   :post (str "/users/recover-password")
@@ -296,7 +296,7 @@
             db-user (r.users/find-by-id (:user/id user))]
         (is (= 200 (:status resp)))
         (is (:user/password-recovering db-user))
-        (is (not (empty? (:user/email-token db-user))))))))
+        (is (seq (:user/email-token db-user)))))))
 
 (deftest change-password
   (let [issue-date (time/date-time 2023 6 6 12 0 0)
@@ -321,7 +321,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/change-password"
                                   :headers (assoc json-headers
@@ -334,7 +334,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/change-password"
                                   :headers (assoc json-headers
@@ -348,7 +348,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/change-password"
                                   :headers (assoc json-headers
@@ -362,7 +362,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/change-password"
                                   :headers (assoc json-headers
@@ -377,7 +377,7 @@
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
                     #'inst-ms (fn [_] (coerce/to-long current-ms))
-                    #'c.users/current-date (fn [] (coerce/to-long current-ms))}
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/change-password"
                                   :headers (assoc json-headers

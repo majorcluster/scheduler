@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS schedulables (
                                      created_at timestamp NOT NULL,
                                      datetime_ranges TEXT NOT NULL,
                                      closed timestamp ARRAY NULL,
-                                     minutes integer NOT NULL,
 
                                      PRIMARY KEY (id)
 );

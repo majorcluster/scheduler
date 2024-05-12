@@ -1,22 +1,19 @@
 (ns scheduler.controllers.users
   (:require
    [scheduler.configs :as configs]
+   [scheduler.controllers.dates :as c.dates]
    [scheduler.i18n :as i18n]
    [scheduler.logic.tokens :as l.tokens]
    [scheduler.ports.http-out.email :as out.email]
-   [scheduler.ports.sql.repositories.users :as r.users])
-  (:import
-   [java.util Date]))
+   [scheduler.ports.sql.repositories.users :as r.users]))
 
-(defn ^:private current-date []
-  (.getTime (Date.)))
 (defn create
   [user]
   (let [user-to-create (-> user
                            (assoc :user/email-token
                                   (l.tokens/gen-token-str
                                    (:user/id user)
-                                   (current-date)
+                                   (c.dates/current-date)
                                    "email-verification")))
         unique? (-> user-to-create
                     :user/email
@@ -33,7 +30,7 @@
                        (:user/email-token user-to-create))})
           (l.tokens/gen-token-str
            (:user/id user)
-           (current-date)
+           (c.dates/current-date)
            "login"))
 
       (throw (ex-info "Uniqueness Failure" {:type :duplicated
@@ -41,7 +38,7 @@
 
 (defn verify-token
   [token]
-  (let [validity (l.tokens/verify token (current-date))
+  (let [validity (l.tokens/verify token (c.dates/current-date))
         user (if (:user-id validity)
                (r.users/find-by-id (:user-id validity))
                nil)]
@@ -52,10 +49,12 @@
 
 (defn verify-token-n-user
   [token]
-  (let [validity (l.tokens/verify token (current-date))
+  (let [validity (l.tokens/verify token (c.dates/current-date))
         user (if (:user-id validity)
                (r.users/find-by-id (:user-id validity))
-               nil)]
+               nil)
+        _ (println "verify-token-n-user &&&" {:validity validity
+                                              :user user})]
     (if (and (:valid validity)
              user
              (:user/email-verified user))
@@ -85,7 +84,7 @@
     (cond (= (:user/password user) (:password login-data))
           (l.tokens/gen-token-str
            (:user/id user)
-           (current-date)
+           (c.dates/current-date)
            "login")
           :else (throw (ex-info "Unauthorized"
                                 {:type :unauthorized
@@ -97,18 +96,17 @@
         token (when user
                 (l.tokens/gen-token-str
                  (:user/id user)
-                 (current-date)
+                 (c.dates/current-date)
                  "password-recovery"))]
     (when user
-      (do
-        (r.users/update! (assoc user :user/password-recovering true
-                                :user/email-token token) (:user/id user))
-        (out.email/send-email
-         email
-         (get-in i18n/t [configs/default-lang :recover-password-subject])
-         (get-in i18n/t [configs/default-lang :recover-password-body])
-         {:name (:user/fname user)
-          :link (str configs/public-url "/users/change-password/" token)})))))
+      (r.users/update! (assoc user :user/password-recovering true
+                              :user/email-token token) (:user/id user))
+      (out.email/send-email
+       email
+       (get-in i18n/t [configs/default-lang :recover-password-subject])
+       (get-in i18n/t [configs/default-lang :recover-password-body])
+       {:name (:user/fname user)
+        :link (str configs/public-url "/users/change-password/" token)}))))
 
 (defn change-password
   [user-id token new-password]

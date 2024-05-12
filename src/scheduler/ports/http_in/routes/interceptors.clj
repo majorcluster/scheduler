@@ -82,17 +82,23 @@
                                (json-out)
                                http/html-body])
 
-(def json-user-interceptors [service-error-handler
-                             (body-params/body-params)
-                             authz-user
-                             (json-out)
-                             http/html-body])
+(def json-user-interceptors
+  "interceptors for fully logged features, when a token for user is required,
+  user is checked and email verified is mandatory"
+  [service-error-handler
+   (body-params/body-params)
+   authz-user
+   (json-out)
+   http/html-body])
 
-(def json-gateway-interceptors [service-error-handler
-                                (body-params/body-params)
-                                authz-user-gateway
-                                (json-out)
-                                http/html-body])
+(def json-gateway-interceptors
+  "interceptors for intermediate steps, when a token for user is required,
+  user is checked but email verified is not mandatory"
+  [service-error-handler
+   (body-params/body-params)
+   authz-user-gateway
+   (json-out)
+   http/html-body])
 
 (def json-root-interceptors [service-error-handler
                              (body-params/body-params)

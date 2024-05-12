@@ -14,5 +14,5 @@
   [wire]
   (-> wire
       commons/remove-namespace
-      (a.commons/update-when-not-nil :created_at a.commons/sql-timestamp->str)
-      (a.commons/update-when-not-nil :scheduled_to a.commons/sql-timestamp->str)))
+      #_(a.commons/update-when-not-nil :created_at a.commons/sql-timestamp->str)
+      #_(a.commons/update-when-not-nil :scheduled_to a.commons/sql-timestamp->str)))

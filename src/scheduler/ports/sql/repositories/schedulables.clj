@@ -16,6 +16,13 @@
       (jdbc/query ["select * from schedulables where created_at >= ? AND created_at < ?" from to])
       a.schedulables/sql-wire->internal))
 
+(defn find-by-name
+  [name]
+  (-> sql.c/datasource
+      (jdbc/query ["select * from schedulables where name = ?" name])
+      first
+      a.schedulables/sql-wire->internal))
+
 (defn find-by-id
   [id]
   (->> id
