@@ -82,7 +82,6 @@
   (let [files (get-files-map "migrations")
         test-files (->> (get-files-map "migrations_test")
                         (merge files))]
-    (println "test-files" test-files)
     (jdbc/with-transaction
       [tx datasource]
       (mapv #(exec-migration-file tx %) (vals test-files)))))

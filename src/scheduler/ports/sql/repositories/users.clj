@@ -10,10 +10,6 @@
   (-> (r.entities/find-all "users")
       a.users/sql-wire->internal))
 
-(defn print-> [x msg]
-  (println msg x)
-  x)
-
 (defn find-by-email
   [email]
   (-> sql.c/datasource

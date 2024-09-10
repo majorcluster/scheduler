@@ -49,23 +49,25 @@
                           :post (str "/users/login")
                           :headers json-headers
                           :body (cjson/write-str {:email "lenin@cccp.co" :password "12345678"})))
-         (get-in [:headers "x-token"])
-         (print-> "TOKEN %%%%"))))
+         (get-in [:headers "x-token"]))))
   ([]
    (user+login (time/date-time 2023 6 6 13 0 0))))
 
 (defn login
-  ([current-ms]
+  ([current-ms login+password id]
    (-> (with-redefs-fn
-         {#'random-uuid          (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-          #'inst-ms              (fn [_] (coerce/to-long current-ms))
-          #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+        {#'random-uuid          (fn [] id)
+         #'inst-ms              (fn [_] (coerce/to-long current-ms))
+         #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
          #(response-for service
                         :post (str "/users/login")
                         :headers json-headers
-                        :body (cjson/write-str {:email "lenin@cccp.co" :password "12345678"})))
-       (get-in [:headers "x-token"])
-       (print-> "TOKEN %%%%")))
+                        :body (cjson/write-str login+password)))
+       (get-in [:headers "x-token"])))
+  ([current-ms]
+   (login current-ms
+          {:email "lenin@cccp.co" :password "12345678"}
+          #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4"))
   ([]
    (login (time/date-time 2023 6 6 13 0 0))))
 

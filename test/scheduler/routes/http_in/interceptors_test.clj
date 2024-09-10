@@ -50,3 +50,46 @@
     (is (= {:valid true, :user-id nil, :role :admin}
            (-> ((:enter interceptors/authz-user) {:request {:headers {"x-token" "dobrou noc"}}})
                :request :authz-user)))))
+
+(deftest authz-admin-user-test
+  (testing "authz-admin-user interceptor should throw an exception"
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          ((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" "invalid-token"}}})))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          ((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" ""}}})))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          ((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" nil}}})))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          ((:enter interceptors/authz-admin-user) {:request {:headers {}}})))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          (with-redefs-fn {#'c.dates/current-date (fn [] (timec/to-long (time/date-time 2018 1 1 15 0 0)))}
+                            #((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" user-token}}}))))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          (with-redefs-fn {#'c.dates/current-date (fn [] (timec/to-long (time/date-time 2018 1 1 14 0 0)))
+                                           #'r.users/find-by-id   (fn [_] {:user/id user-id
+                                                                           :user/email-verified false})}
+                            #((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" user-token}}}))))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          (with-redefs-fn {#'c.dates/current-date (fn [] (timec/to-long (time/date-time 2018 1 1 14 0 0)))
+                                           #'r.users/find-by-id   (fn [_] {:user/id user-id
+                                                                           :user/email-verified false
+                                                                           :user/role "user"})}
+                            #((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" user-token}}}))))
+    (is (thrown-with-msg? ExceptionInfo #"Unauthorized"
+                          (with-redefs-fn {#'c.dates/current-date (fn [] (timec/to-long (time/date-time 2018 1 1 14 0 0)))
+                                           #'r.users/find-by-id   (fn [_] nil)}
+                            #((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" user-token}}})))))
+  (testing "authz-user interceptor should let the request go through"
+    (is (= {:valid true, :user-id #uuid "f8deaa87-906f-4f5e-b1d3-6919336c3c66", :role :user}
+           (-> (with-redefs-fn {#'c.dates/current-date (fn [] (timec/to-long (time/date-time 2018 1 1 14 0 0)))
+                                #'r.users/find-by-id   (fn [_] {:user/id user-id
+                                                                :user/email-verified true
+                                                                :user/role "admin"})}
+                 #((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" user-token}}}))
+               :request :authz-user)))
+    (is (= {:valid true, :user-id nil, :role :user}
+           (-> ((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" "dobry den"}}})
+               :request :authz-user)))
+    (is (= {:valid true, :user-id nil, :role :admin}
+           (-> ((:enter interceptors/authz-admin-user) {:request {:headers {"x-token" "dobrou noc"}}})
+               :request :authz-user)))))

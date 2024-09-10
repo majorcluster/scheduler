@@ -11,14 +11,6 @@
   (let [digest (.digest (MessageDigest/getInstance "SHA-256") (.getBytes string "UTF-8"))]
     (apply str (map (partial format "%02x") digest))))
 
-(defn print->> [msg x]
-  (println msg x)
-  x)
-
-(defn print-> [x msg]
-  (println msg x)
-  x)
-
 (defn internal->sql-wire
   [wire]
   (->> (data-adapter/transform-keys #(->> %
@@ -51,6 +43,16 @@
              :created-at (inst-ms (Instant/now))
              :role "user"
              :id (random-uuid))
+      (#(data-adapter/transform-keys (partial data-adapter/kebab-key->namespaced-key "user") %))))
+
+(defn admin-sign-up->internal
+  [wire]
+  (-> wire
+      (assoc :password (sha256 (:password wire))
+             :created-at (inst-ms (Instant/now))
+             :role "admin"
+             :id (random-uuid)
+             :email-verified true)
       (#(data-adapter/transform-keys (partial data-adapter/kebab-key->namespaced-key "user") %))))
 
 (defn login->internal

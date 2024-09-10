@@ -2,6 +2,7 @@
   (:require
    [clj-data-adapter.core :as data-adapters]
    [clojure.data.json :as cjson]
+   [clojure.stacktrace :refer [print-stack-trace]]
    [io.pedestal.http :as http]
    [io.pedestal.http.body-params :as body-params]
    [scheduler.configs :as configs]
@@ -54,17 +55,24 @@
         (if (:valid validity)
           (assoc-in context [:request :authz-user] validity)
           (authorization-error "Invalid token" validity)))
-      (catch ExceptionInfo e
-        (println "error authorizing" (ex-cause e) (ex-message e))
+      (catch ExceptionInfo _
         (authorization-error)))))
 
 (def authz-user
   {:name ::authz-user
    :enter (authz c.users/verify-token-n-user)})
 
+(def authz-admin-user
+  {:name ::authz-admin-user
+   :enter (authz c.users/verify-token-n-admin-user)})
+
 (def authz-user-gateway
   {:name ::authz-user-gateway
    :enter (authz c.users/verify-token)})
+
+(def authz-email-gateway
+  {:name ::authz-email-gateway
+   :enter (authz c.users/verify-email-token)})
 
 (def authz-admin
   {:name ::authz-admin
@@ -74,7 +82,8 @@
                 (cond (= token configs/admin-passphrase) context
                       :else (authorization-error)))
               (catch ExceptionInfo e
-                (println "error authorizing" (ex-cause e) (ex-message e))
+                (print-stack-trace e)
+                (println "error authorizing admin" (ex-cause e) (ex-message e))
                 (authorization-error))))})
 
 (def json-public-interceptors [service-error-handler
@@ -91,12 +100,29 @@
    (json-out)
    http/html-body])
 
+(def json-admin-interceptors
+  "interceptors for fully logged admin features, when a token for admin user is required,
+  user is checked and email verified is mandatory"
+  [service-error-handler
+   (body-params/body-params)
+   authz-admin-user
+   (json-out)
+   http/html-body])
+
 (def json-gateway-interceptors
   "interceptors for intermediate steps, when a token for user is required,
   user is checked but email verified is not mandatory"
   [service-error-handler
    (body-params/body-params)
    authz-user-gateway
+   (json-out)
+   http/html-body])
+
+(def json-email-gateway-interceptors
+  "interceptors for intermediate steps, when a token for email is required"
+  [service-error-handler
+   (body-params/body-params)
+   authz-email-gateway
    (json-out)
    http/html-body])
 

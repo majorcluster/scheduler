@@ -36,6 +36,45 @@
       (throw (ex-info "Uniqueness Failure" {:type :duplicated
                                             :message "An user with that email already exists"})))))
 
+(defn create-verified
+  [user token-email]
+  (let [by-email (-> user
+                     :user/email
+                     r.users/find-by-email)
+        unique? (-> by-email
+                    empty?)
+        unequal-email? (not= (:user/email user)
+                             token-email)]
+    (cond
+      unequal-email?
+      (throw (ex-info "Token Mismatch" {:type :token-mismatch
+                                        :message "The token does not match the user"}))
+
+      unique?
+      (r.users/insert! user)
+
+      :else
+      (throw (ex-info "Uniqueness Failure" {:type :duplicated
+                                            :message "An user with that email already exists"})))))
+
+(defn admin-signup-email
+  [email]
+  (let [unique? (-> email
+                    r.users/find-by-email
+                    empty?)
+        token (l.tokens/gen-email-token-str
+               email
+               (c.dates/current-date)
+               "admin-signup")]
+    (if unique?
+      (out.email/send-email
+       email
+       (get-in i18n/t [configs/default-lang :admin-signup-subject])
+       (get-in i18n/t [configs/default-lang :admin-signup-body])
+       {:link (str configs/public-url "/users/admin/verify-email/" token)})
+      (throw (ex-info "Uniqueness Failure" {:type :duplicated
+                                            :message "An user with that email already exists"})))))
+
 (defn verify-token
   [token]
   (let [validity (l.tokens/verify token (c.dates/current-date))
@@ -47,17 +86,36 @@
       validity
       {:valid false})))
 
+(defn verify-email-token
+  [token]
+  (let [validity (l.tokens/verify-email token (c.dates/current-date))]
+    (if (and (:valid validity)
+             (not-empty (:email validity)))
+      validity
+      {:valid false})))
+
 (defn verify-token-n-user
   [token]
   (let [validity (l.tokens/verify token (c.dates/current-date))
         user (if (:user-id validity)
                (r.users/find-by-id (:user-id validity))
-               nil)
-        _ (println "verify-token-n-user &&&" {:validity validity
-                                              :user user})]
+               nil)]
     (if (and (:valid validity)
              user
              (:user/email-verified user))
+      validity
+      {:valid false})))
+
+(defn verify-token-n-admin-user
+  [token]
+  (let [validity (l.tokens/verify token (c.dates/current-date))
+        user (if (:user-id validity)
+               (r.users/find-by-id (:user-id validity))
+               nil)]
+    (if (and (:valid validity)
+             user
+             (:user/email-verified user)
+             (= "admin" (:user/role user)))
       validity
       {:valid false})))
 
@@ -99,7 +157,8 @@
                  (c.dates/current-date)
                  "password-recovery"))]
     (when user
-      (r.users/update! (assoc user :user/password-recovering true
+      (r.users/update! (assoc user
+                              :user/password-recovering true
                               :user/email-token token) (:user/id user))
       (out.email/send-email
        email

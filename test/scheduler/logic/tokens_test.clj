@@ -36,3 +36,24 @@
           now (to-long (date-time 2000 1 2 0 0 0))
           {:keys [valid]} (c.tokens/verify token now)]
       (is (not valid)))))
+
+(deftest verify-email-test
+  (testing "verify should return a valid token"
+    (let [creation-timestamp (to-long (date-time 2000 1 1 23 0 0))
+          type "admin-signup"
+          token (c.tokens/gen-email-token-str "lenin@cccp.co"
+                                              creation-timestamp
+                                              type)
+          now (to-long (date-time 2000 1 1 23 59 59))
+          {:keys [valid email]} (c.tokens/verify-email token now)]
+      (is valid)
+      (is (= email "lenin@cccp.co"))))
+  (testing "verify should return an invalid token"
+    (let [creation-timestamp (to-long (date-time 2000 1 1 23 0 0))
+          type "admin-signup"
+          token (c.tokens/gen-email-token-str "lenin@cccp.co"
+                                              creation-timestamp
+                                              type)
+          now (to-long (date-time 2000 1 2 0 0 0))
+          {:keys [valid]} (c.tokens/verify-email token now)]
+      (is (not valid)))))
