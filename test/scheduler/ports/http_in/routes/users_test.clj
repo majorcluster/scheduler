@@ -4,7 +4,7 @@
    [clj-time.core :as time]
    [clojure.data.json :as cjson]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [core-test :refer [extract-validation-msgs service test-fixture user+login login]]
+   [core-test :refer [extract-validation-msgs login service test-fixture]]
    [io.pedestal.test :refer [response-for]]
    [matcher-combinators.test]
    [scheduler.controllers.dates :as c.dates]
@@ -34,8 +34,8 @@
         (is (= 400
                (:status resp)))
         (is (= '("fname" "fname" "fname" "lname" "lname" "lname"
-                 "phone" "phone" "phone" "email" "email" "email"
-                 "password" "password" "password")
+                         "phone" "phone" "phone" "email" "email" "email"
+                         "password" "password" "password")
                (map :field (extract-validation-msgs resp))))))
     (testing "user inserted"
       (let [resp (with-redefs-fn
@@ -372,8 +372,8 @@
                (-> resp :body (cjson/read-str :key-fn keyword)))))
       (let [current-ms (time/date-time 2023 6 6 12 0 0)
             _ (r.users/update! (assoc user
-                                 :user/password-recovering true
-                                 :user/email-token nil)
+                                      :user/password-recovering true
+                                      :user/email-token nil)
                                (:user/id user))
             resp (with-redefs-fn
                    {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
@@ -422,11 +422,11 @@
               :user/password "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f"}
         _ (r.users/insert! user)
         user-admin (assoc user
-                     :user/id #uuid "2545a363-ca70-4a43-9f5f-ef0cbfdab7d3"
-                     :user/role "admin"
-                     :user/email "kollontai@cccp.co"
-                     :user/fname "Alexandra"
-                     :user/lname "Kollontai")
+                          :user/id #uuid "2545a363-ca70-4a43-9f5f-ef0cbfdab7d3"
+                          :user/role "admin"
+                          :user/email "kollontai@cccp.co"
+                          :user/fname "Alexandra"
+                          :user/lname "Kollontai")
         _ (r.users/insert! user-admin)
         token (login issue-date)
         token-admin (login issue-date
@@ -435,9 +435,9 @@
     (testing "when mandatory data is not sent"
       (let [current-ms (time/date-time 2023 6 6 12 59 59)
             resp (with-redefs-fn
-                  {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                   #'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                   {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/admin-signup-email")
                                   :headers (assoc json-headers
@@ -449,13 +449,13 @@
     (testing "when user is not admin"
       (let [current-ms (time/date-time 2023 6 6 12 59 59)
             resp (with-redefs-fn
-                  {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                   #'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                   {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/admin-signup-email")
                                   :headers (assoc json-headers
-                                             "x-token" token)
+                                                  "x-token" token)
                                   :body (cjson/write-str {:email "sankara@cccp.co"})))]
         (is (= 401 (:status resp)))
         (is (= {:type "unauthorized", :message "Unauthorized", :reason {}}
@@ -465,13 +465,13 @@
     (testing "when not unique"
       (let [current-ms (time/date-time 2023 6 6 12 59 59)
             resp (with-redefs-fn
-                  {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                   #'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                   {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post (str "/users/admin-signup-email")
                                   :headers (assoc json-headers
-                                             "x-token" token-admin)
+                                                  "x-token" token-admin)
                                   :body (cjson/write-str {:email "lenin@cccp.co"})))]
         (is (= 400 (:status resp)))
         (is (= {:type "duplicated", :message "An user with that email already exists"}
@@ -479,14 +479,14 @@
     (testing "when successful"
       (let [current-ms (time/date-time 2023 6 6 12 59 59)
             resp (with-redefs-fn
-                  {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                   #'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))
-                   #'out.email/send-email (fn [_ _ _ _] nil)}
+                   {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))
+                    #'out.email/send-email (fn [_ _ _ _] nil)}
                    #(response-for service
                                   :post (str "/users/admin-signup-email")
                                   :headers (assoc json-headers
-                                             "x-token" token-admin)
+                                                  "x-token" token-admin)
                                   :body (cjson/write-str {:email "sankara@cccp.co"})))]
         (is (= 200 (:status resp)))
         (is (= {:message "Admin signup e-mail has been sent"}
@@ -505,30 +505,30 @@
               :password "12345678"}]
     (testing "no mandatory fields"
       (let [resp (with-redefs-fn
-                  {#'inst-ms (fn [_] (coerce/to-long issue-date))
-                   #'c.dates/current-date (fn [] (coerce/to-long issue-date))}
+                   {#'inst-ms (fn [_] (coerce/to-long issue-date))
+                    #'c.dates/current-date (fn [] (coerce/to-long issue-date))}
                    #(response-for service
                                   :post "/users/admin-signup"
                                   :headers (assoc json-headers
-                                             "x-token" email-token)
+                                                  "x-token" email-token)
                                   :body "{}"))]
         (is (= 400
                (:status resp)))
         (is (= '("fname" "fname" "fname" "lname" "lname" "lname"
-                 "phone" "phone" "phone" "email" "email" "email"
-                 "password" "password" "password")
+                         "phone" "phone" "phone" "email" "email" "email"
+                         "password" "password" "password")
                (map :field (extract-validation-msgs resp))))))
     (testing "unauthorized due to expired token"
       (let [current-ms (time/date-time 2023 6 6 13 0 0)
             resp (with-redefs-fn
-                  {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                   {#'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/admin-signup"
                                   :headers (assoc json-headers
-                                             "x-token" email-token)
+                                                  "x-token" email-token)
                                   :body (cjson/write-str (assoc user
-                                                           :email "another@cccp.co"))))
+                                                                :email "another@cccp.co"))))
             db-user (r.users/find-by-id (:user/id user))]
         (is (= 401 (:status resp)))
         (is (= {:type "unauthorized", :message "Unauthorized", :reason {}}
@@ -537,12 +537,12 @@
     (testing "unauthorized due to stolen token"
       (let [current-ms (time/date-time 2023 6 6 12 59 59)
             resp (with-redefs-fn
-                  {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                   {#'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/admin-signup"
                                   :headers (assoc json-headers
-                                             "x-token" email-token)
+                                                  "x-token" email-token)
                                   :body (cjson/write-str (assoc
                                                           user
                                                           :email "another@cccp.co"))))
@@ -554,8 +554,8 @@
     (testing "unauthorized due missing login token"
       (let [current-ms (time/date-time 2023 6 6 12 59 59)
             resp (with-redefs-fn
-                  {#'inst-ms (fn [_] (coerce/to-long current-ms))
-                   #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                   {#'inst-ms (fn [_] (coerce/to-long current-ms))
+                    #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
                    #(response-for service
                                   :post "/users/admin-signup"
                                   :headers json-headers
@@ -567,13 +567,13 @@
         (is (nil? db-user))))
     (testing "user inserted"
       (let [resp (with-redefs-fn
-                  {#'random-uuid          (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                   #'inst-ms              (fn [_] 1234567890123)
-                   #'c.dates/current-date (fn [] 1234567890123)}
+                   {#'random-uuid          (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms              (fn [_] 1234567890123)
+                    #'c.dates/current-date (fn [] 1234567890123)}
                    #(response-for service
                                   :post "/users/admin-signup"
                                   :headers (assoc json-headers
-                                             "x-token" email-token)
+                                                  "x-token" email-token)
                                   :body (cjson/write-str user)))
             db-user (r.users/find-by-email (:email user))]
         (is (= 204
@@ -595,13 +595,13 @@
                     :lname "Lenin"}))))
     (testing "user duplicated not inserted"
       (let [resp (with-redefs-fn
-                  {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
-                   #'inst-ms     (fn [_] 1234567890123)
-                   #'c.dates/current-date (fn [] 1234567890123)}
+                   {#'random-uuid (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                    #'inst-ms     (fn [_] 1234567890123)
+                    #'c.dates/current-date (fn [] 1234567890123)}
                    #(response-for service
                                   :post "/users/admin-signup"
                                   :headers (assoc json-headers
-                                             "x-token" email-token)
+                                                  "x-token" email-token)
                                   :body (cjson/write-str user)))]
         (is (= 400
                (:status resp)))

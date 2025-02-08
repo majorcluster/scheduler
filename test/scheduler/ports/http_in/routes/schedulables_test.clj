@@ -7,7 +7,6 @@
    [core-test :refer [extract-validation-msgs login service test-fixture
                       user+login]]
    [io.pedestal.test :refer [response-for]]
-   [matcher-combinators.test]
    [scheduler.controllers.dates :as c.dates]
    [scheduler.ports.sql.repositories.schedulables :as r.schedulables]))
 
@@ -21,7 +20,7 @@
 
 (def schedulable
   {:name "my-schedulable"
-   :datetime-ranges "@hourly"})
+   :datetime-ranges "50m:1-00:all-days,not-dec24-dec31"})
 
 (deftest post-schedulable
   (testing "when schedulable is invalid"
@@ -37,8 +36,41 @@
                                                 "x-token" token)
                                 :body "{}"))]
       (is (= 400 (:status resp)))
-      (is (= '("name" "name" "name" "datetime-ranges" "datetime-ranges")
+      (is (= '("name" "name" "name"
+                      "datetime-ranges"
+                      "datetime-ranges"
+                      "datetime-ranges")
              (map :field (extract-validation-msgs resp))))))
+  (testing "when datetime is invalid"
+    (let [current-ms (time/date-time 2023 6 6 12 0 0)
+          token (login current-ms)
+          resp (with-redefs-fn
+                 {#'random-uuid                 (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                  #'inst-ms                     (fn [_] (coerce/to-long current-ms))
+                  #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                 #(response-for service
+                                :post "/schedulables"
+                                :headers (assoc json-headers
+                                                "x-token" token)
+                                :body (cjson/write-str (assoc schedulable
+                                                              :datetime-ranges "anything"))))]
+      (is (= 400 (:status resp)))
+      (is (extract-validation-msgs resp) "")))
+  (testing "when datetime ranges overlap"
+    (let [current-ms (time/date-time 2023 6 6 12 0 0)
+          token (login current-ms)
+          resp (with-redefs-fn
+                 {#'random-uuid                 (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+                  #'inst-ms                     (fn [_] (coerce/to-long current-ms))
+                  #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+                 #(response-for service
+                                :post "/schedulables"
+                                :headers (assoc json-headers
+                                                "x-token" token)
+                                :body (cjson/write-str (assoc schedulable
+                                                              :datetime-ranges "60m:8-20:mon-fri,50m:8-18:mon-tue"))))]
+      (is (= 400 (:status resp)))
+      (is (extract-validation-msgs resp) "")))
   (testing "when unlogged"
     (let [current-ms (time/date-time 2023 6 6 12 0 0)
           resp (with-redefs-fn

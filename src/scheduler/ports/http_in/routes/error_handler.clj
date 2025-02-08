@@ -1,9 +1,7 @@
 (ns scheduler.ports.http-in.routes.error-handler
   (:require
    [clojure.data.json :as cjson]
-   [io.pedestal.interceptor.error :refer [error-dispatch]])
-  (:import
-   (clojure.lang ExceptionInfo)))
+   [io.pedestal.interceptor.error :refer [error-dispatch]]))
 
 (defn- get-exception-data
   [exception]

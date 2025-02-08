@@ -10,11 +10,39 @@
    [scheduler.controllers.dates :as c.dates]
    [scheduler.ports.http-in.core :as service]
    [scheduler.ports.sql.core :as sql.c]
-   [scheduler.ports.sql.repositories.users :as r.users]))
+   [scheduler.ports.sql.repositories.users :as r.users])
+  (:import
+   [clojure.lang ExceptionInfo]))
 
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 (def json-headers {"Content-Type" "application/json"})
+
+(defmethod assert-expr 'thrown-with-data? [msg form]
+  ;; (is (thrown-with-data? pred expr))
+  ;; Asserts that the message string of the ExceptionInfo exception matches
+  ;; (with re-find) the regular expression re.
+  ;; Also asserts that the attached data matches the given predicate
+  (let [re (nth form 1)
+        data (nth form 2)
+        body (nthnext form 3)]
+    `(try ~@body
+          (do-report {:type :fail, :message ~msg, :expected '~form, :actual nil})
+          (catch ExceptionInfo e#
+            (let [m# (.getMessage e#)
+                  dta# (ex-data e#)]
+              (cond
+                (not (re-find ~re m#))
+                (do-report {:type :fail, :message ~msg,
+                            :expected '~re, :actual m#})
+                (not= dta# ~data)
+                (do-report {:type :fail, :message ~msg,
+                            :expected '~data, :actual dta#})
+
+                :else
+                (do-report {:type :pass, :message ~msg,
+                            :expected '~re, :actual m#})))
+            e#))))
 
 (defn extract-validation-msgs
   [resp]
@@ -56,9 +84,9 @@
 (defn login
   ([current-ms login+password id]
    (-> (with-redefs-fn
-        {#'random-uuid          (fn [] id)
-         #'inst-ms              (fn [_] (coerce/to-long current-ms))
-         #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
+         {#'random-uuid          (fn [] id)
+          #'inst-ms              (fn [_] (coerce/to-long current-ms))
+          #'c.dates/current-date (fn [] (coerce/to-long current-ms))}
          #(response-for service
                         :post (str "/users/login")
                         :headers json-headers
