@@ -9,6 +9,9 @@
 (defn in->internal
   [wire]
   (-> wire
+      (#(if (:id %)
+            %
+            (assoc % :id (random-uuid))))
       (#(data-adapter/transform-keys (partial data-adapter/kebab-key->namespaced-key "schedulable") %))))
 
 (defn internal->sql-wire

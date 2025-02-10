@@ -1,5 +1,6 @@
 (ns core-test
   (:require
+   [clj-data-adapter.core :as data-adapter]
    [clj-time.coerce :as coerce]
    [clj-time.core :as time]
    [clojure.data.json :as cjson]
@@ -111,3 +112,7 @@
   (setup)
   (f)
   (teardown))
+
+(defn resp->map
+  [resp]
+  (-> resp :body cjson/read-str (#(data-adapter/transform-keys keyword %))))

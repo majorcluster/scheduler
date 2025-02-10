@@ -8,3 +8,5 @@ test-emai.sh
 
 /.clj-kondo/.cache
 /.lsp/.cache
+/.lein-repl-history
+/.nrepl-port

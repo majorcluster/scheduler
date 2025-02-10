@@ -23,7 +23,7 @@
       first
       a.schedulables/sql-wire->internal))
 
-(defn find-by-id
+(defn find-by-id!
   [id]
   (->> id
        (r.entities/find-by-id "schedulables")

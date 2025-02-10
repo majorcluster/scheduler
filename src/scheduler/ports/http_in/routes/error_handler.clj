@@ -44,6 +44,8 @@
      :bad-format (assoc context :response (resp-custom-ex exception 400))
      :duplicated (assoc context :response (resp-custom-ex exception 400))
      :token-mismatch (assoc context :response (resp-custom-ex exception 401))
+     :not-found (assoc context :response (resp-custom-ex exception 404))
+     :min-attrs (assoc context :response (resp-custom-ex exception 400))
      (assoc context :io.pedestal.interceptor.chain/error exception))
 
    :else
