@@ -42,4 +42,4 @@
 
 (defn delete-by-id!
   [id]
-  (r.entities/delete-by-id! :schedulables (parse-long id)))
+  (r.entities/delete-by-id! :schedulables id))

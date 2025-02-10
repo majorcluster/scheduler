@@ -57,3 +57,10 @@
                                             :message "A schedulable with that id was not found"})))
    (throw (ex-info "Not Found Failure" {:type :not-found
                                         :message "A schedulable with that id was not found"}))))
+
+(defn delete
+  [id]
+  (if (r.schedulables/find-by-id! id)
+    (r.schedulables/delete-by-id! id)
+    (throw (ex-info "Not Found Failure" {:type :not-found
+                                         :message "A schedulable with that id was not found"}))))

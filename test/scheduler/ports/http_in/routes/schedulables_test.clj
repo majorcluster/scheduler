@@ -89,6 +89,20 @@
                                          "x-token" token)))]
     resp))
 
+(defn delete
+  [id]
+  (let [current-ms (time/date-time 2023 6 6 12 0 0)
+        token (login current-ms)
+        resp (with-redefs-fn
+              {#'random-uuid                 (fn [] #uuid "3745a363-ca70-4a43-9f5f-ef0cbfdab7e4")
+               #'inst-ms                     (fn [_] (coerce/to-long current-ms))
+               #'c.dates/current-date        (fn [] (coerce/to-long current-ms))}
+               #(response-for service
+                              :delete (str "/schedulables/" id)
+                              :headers (assoc json-headers
+                                         "x-token" token)))]
+    resp))
+
 (deftest schedulable-crud-test
   (testing "[POST]/schedulables when schedulable is invalid"
     (let [[resp _] (insert-schedulable {} user+login)]
@@ -223,4 +237,22 @@
   (testing "[GET]/schedulables/:id when not found"
     (let [resp (by-id #uuid "5a28e07b-ded2-4df7-b201-c33b822e40cc")]
       (is (= 404 (:status resp)))
-      (is (=  "{\"type\":\"not-found\",\"message\":\"A schedulable with that id was not found\"}" (-> resp :body))))))
+      (is (=  "{\"type\":\"not-found\",\"message\":\"A schedulable with that id was not found\"}" (-> resp :body)))))
+  (testing "[GET]/schedulables/:id when id is invalid"
+    (let [resp (by-id "anything")]
+      (is (= 400 (:status resp)))
+      (is (= [{:field "id", :message ":id needs to match uuid v4 pattern"}]
+             (extract-validation-msgs resp)))))
+
+  (testing "[DELETE]/schedulables/:id when found"
+    (let [{status :status} (delete #uuid "9b28e07b-ded2-4df7-b201-c33b822e40db")]
+      (is (= 204 status))))
+  (testing "[DELETE]/schedulables/:id when not found"
+    (let [resp (delete #uuid "5a28e07b-ded2-4df7-b201-c33b822e40cc")]
+      (is (= 404 (:status resp)))
+      (is (=  "{\"type\":\"not-found\",\"message\":\"A schedulable with that id was not found\"}" (-> resp :body)))))
+  (testing "[DELETE]/schedulables/:id when id is invalid"
+    (let [resp (delete "anything")]
+      (is (= 400 (:status resp)))
+      (is (= [{:field "id", :message ":id needs to match uuid v4 pattern"}]
+             (extract-validation-msgs resp))))))

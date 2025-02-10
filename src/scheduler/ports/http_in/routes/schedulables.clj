@@ -76,12 +76,31 @@
 
 (defn by-id
   [request]
-  (let [id (get-in request [:path-params :id])]
-    {:status 200 :body {:schedulable
-                        (c.schedulables/by-id id)}}))
+  (let [schedulable (-> (get request :path-params {})
+                        (ph/validate-and-mop!!
+                         {"id"              [{:validate/type :validate/custom
+                                              :validate/value ph/is-uuid
+                                              :validate/message ":id needs to match uuid v4 pattern"}]}
+                         ["id"])
+                         :id
+                         c.schedulables/by-id)]
+    {:status 200 :body {:schedulable schedulable}}))
+
+(defn delete
+  [request]
+  (let [_ (-> (get request :path-params {})
+              (ph/validate-and-mop!!
+               {"id"              [{:validate/type :validate/custom
+                                    :validate/value #(or (uuid? %) (ph/is-uuid %))
+                                    :validate/message ":id needs to match uuid v4 pattern"}]}
+               ["id"])
+              :id
+              c.schedulables/delete)]
+    {:status 204}))
 
 (def specs
-  #{["/schedulables"     :post  (conj i/json-user-interceptors `post)]
-    ["/schedulables"     :patch (conj i/json-user-interceptors `patch)]
-    ["/schedulables"     :get   (conj i/json-user-interceptors `all)]
-    ["/schedulables/:id" :get   (conj i/json-user-interceptors `by-id)]})
+  #{["/schedulables"     :post   (conj i/json-user-interceptors `post)]
+    ["/schedulables"     :patch  (conj i/json-user-interceptors `patch)]
+    ["/schedulables"     :get    (conj i/json-user-interceptors `all)]
+    ["/schedulables/:id" :get    (conj i/json-user-interceptors `by-id)]
+    ["/schedulables/:id" :delete (conj i/json-user-interceptors `delete)]})
